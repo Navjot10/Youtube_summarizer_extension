@@ -6,7 +6,6 @@ from openai import OpenAI
 app = Flask(__name__)
 CORS(app)
 
-client = OpenAI(api_key='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')
 
 @app.route('/get_transcript', methods=['GET'])
 def get_transcript():
