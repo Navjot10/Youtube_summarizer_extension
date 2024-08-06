@@ -1,0 +1,43 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from youtube_transcript_api import YouTubeTranscriptApi
+from openai import OpenAI
+
+app = Flask(__name__)
+CORS(app)
+
+client = OpenAI(api_key='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')
+
+@app.route('/get_transcript', methods=['GET'])
+def get_transcript():
+    video_id = request.args.get('video_id')
+    try:
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript_text = ' '.join([entry['text'] for entry in transcript])
+        return jsonify({"transcript": transcript_text})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/get_summary', methods=['POST'])
+def get_summary():
+    try:
+        data = request.json
+        transcript = data.get('transcript')
+
+        completion = client.chat.completions.create(
+            model='gpt-4o-mini',  
+            messages=[
+                {"role": "user", "content": f"Summarize the following transcript: {transcript}"}
+            ],
+            max_tokens=100
+        )
+
+        summary = completion.choices[0].message.content.strip()
+        return jsonify({'summary': summary})
+
+    except Exception as e:
+        print(f'Error fetching summary: {e}')
+        return jsonify({'error': 'Error fetching summary'}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
