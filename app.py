@@ -13,18 +13,9 @@ def get_summary():
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
         transcript_text = ' '.join([entry['text'] for entry in transcript])
-        return jsonify({"transcript": transcript_text})
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-@app.route('/get_summary', methods=['POST'])
-def get_summary():
-    try:
-        data = request.json
-        transcript = data.get('transcript')
-
+        
         completion = client.chat.completions.create(
-            model='gpt-4o-mini',  
+            model='gpt-4o-mini', 
             messages=[
                 {"role": "user", "content": f"Summarize the following briefly in less than 75 words: {transcript_text}"}
             ],
